@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.example.abetrosita.myfriends">
+
+    <permission android:name="com.example.abetrosita.myfriends.provider.READWRITE"/>
+
+    <uses-permission android:name="com.example.abetrosita.myfriends.provider.READWRITE"/>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".FriendDetailActivity"
+                  android:parentActivityName=".MainActivity"
+                  android:label="@string/activity_addFriend_label">
+        </activity>
+
+        <provider
+            android:name=".FriendsProvider"
+            android:authorities="com.example.abetrosita.myfriends.provider"
+            android:exported="true"
+            android:readPermission="com.example.abetrosita.myfriends.provider.READWRITE"
+            android:writePermission="com.example.abetrosita.myfriends.provider.READWRITE"/>
+
+    </application>
+
+</manifest>
