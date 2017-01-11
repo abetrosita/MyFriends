@@ -14,5 +14,5 @@ public class FriendConstants {
 
     public static final String ACTIVITY_TITLE_ADD = "Add Friend";
     public static final String ACTIVITY_TITLE_UPDATE = "Update Friend";
-
+    static final String TEST_ONLY = "test";
 }
