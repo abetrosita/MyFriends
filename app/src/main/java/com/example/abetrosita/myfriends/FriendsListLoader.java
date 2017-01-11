@@ -17,9 +17,9 @@ import java.util.List;
  * Created by AbetRosita on 12/29/2016.
  */
 
-public class FriendsListLoader extends AsyncTaskLoader<List<Friend>> {
+public class FriendsListLoader extends AsyncTaskLoader<Cursor> {
     private static final String LOG_TAG = FriendsListLoader.class.getSimpleName();
-    private List<Friend> mFriends;
+    //private List<Friend> mFriends;
     private ContentResolver mContentResolver;
     private Cursor mCursor;
 
@@ -48,15 +48,15 @@ public class FriendsListLoader extends AsyncTaskLoader<List<Friend>> {
     }
 
     @Override
-    public void onCanceled(List<Friend> friends) {
-        super.onCanceled(friends);
+    public void onCanceled(Cursor cursor) {
+        super.onCanceled(cursor);
         if(mCursor != null) {
             mCursor.close();
         }
     }
 
     @Override
-    public List<Friend> loadInBackground() {
+    public Cursor loadInBackground() {
         String[] projection = {
                 BaseColumns._ID,
                 FriendsContract.FriendsColumns.FRIENDS_NAME,
@@ -66,6 +66,7 @@ public class FriendsListLoader extends AsyncTaskLoader<List<Friend>> {
 
         List<Friend> entries = new ArrayList<Friend>();
         mCursor = mContentResolver.query(FriendsContract.URI_TABLE, projection, null, null, null);
+        /*
         if(mCursor !=null){
             if(mCursor.moveToFirst()){
                 do{
@@ -80,39 +81,42 @@ public class FriendsListLoader extends AsyncTaskLoader<List<Friend>> {
         }
 
         return entries;
+        */
+        return mCursor;
     }
 
     @Override
-    public void deliverResult(List<Friend> friends) {
+    public void deliverResult(Cursor cursor) {
 
         if(isReset()){
-            if(friends != null){
+            if(cursor != null){
                 mCursor.close();
             }
         }
 
-        List<Friend> oldFriendList = mFriends;
-        if(mFriends == null || mFriends.size() == 0){
+//        List<Friend> oldFriendList = mFriends;
+        Cursor oldCursor = mCursor;
+        if(mCursor == null){
             Log.d(LOG_TAG, "+++++ No data returned");
         }
 
-        mFriends = friends;
+//        mFriends = friends;
 
         if(isStarted()) {
-            super.deliverResult(friends);
+            super.deliverResult(cursor);
         }
 
-        if(oldFriendList != null && oldFriendList != friends) {
+        if(oldCursor != null && oldCursor != cursor) {
             mCursor.close();
         }
     }
 
     @Override
     protected void onStartLoading() {
-        if(mFriends != null) {
-            deliverResult(mFriends);
+        if(mCursor != null) {
+            deliverResult(mCursor);
         }
-        if(takeContentChanged() || mFriends == null) {
+        if(takeContentChanged() || mCursor == null) {
             forceLoad();
         }
     }
@@ -123,7 +127,7 @@ public class FriendsListLoader extends AsyncTaskLoader<List<Friend>> {
         if(mCursor != null){
             mCursor.close();
         }
-        mFriends = null;
+        mCursor = null;
     }
 
     @Override
@@ -132,7 +136,7 @@ public class FriendsListLoader extends AsyncTaskLoader<List<Friend>> {
     }
 
     @Override
-    protected List<Friend> onLoadInBackground() {
+    protected Cursor onLoadInBackground() {
         return super.onLoadInBackground();
     }
 

@@ -61,7 +61,8 @@ public class FriendsProvider extends ContentProvider{
                 // do nothing
                 break;
             case FRIENDS_ID:
-                String id = FriendsContract.Friends.getFriendId(uri);
+                String id = uri.getLastPathSegment();
+                Log.d("testUri", String.valueOf(uri));
                 queryBuilder.appendWhere(BaseColumns._ID +"="+ id);
                 break;
             default:

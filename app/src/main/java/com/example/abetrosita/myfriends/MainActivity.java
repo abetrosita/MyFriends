@@ -3,6 +3,7 @@ package com.example.abetrosita.myfriends;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -18,24 +19,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import java.util.List;
-
 import static android.view.View.GONE;
+import static com.example.abetrosita.myfriends.FriendConstants.ACTIVITY_TITLE_UPDATE;
 
 public class MainActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<List<Friend>>, FriendAdapter.FriendAdapterOnClickHandler{
+        implements LoaderManager.LoaderCallbacks<Cursor>, FriendAdapter.FriendAdapterOnClickHandler{
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
-
     private static final int LOADER_ID = 1;
-    private static final int NUM_FRIEND_ITEM = 2;
 
     private Toast mToast;
     public static FriendAdapter mFriendAdapter;
     public static ContentResolver mContentResolver;
     public static Context mContext;
     private RecyclerView mFriendList;
-    private List<Friend> mFriends;
+    private Cursor mCursor;
 
     private View lastView;
     private boolean editVisible;
@@ -56,7 +54,6 @@ public class MainActivity extends AppCompatActivity
 
         mContentResolver = this.getContentResolver();
         getSupportLoaderManager().initLoader(LOADER_ID, null, this);
-
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -86,7 +83,7 @@ public class MainActivity extends AppCompatActivity
         switch (item.getItemId()){
             case R.id.addRecord:
                 Intent intent = new Intent(MainActivity.this, FriendDetailActivity.class);
-                intent.putExtra("title", "Add Friend");
+                intent.putExtra(FriendConstants.INTENT_EXTRA_TITLE, FriendConstants.ACTIVITY_TITLE_ADD);
                 startActivity(intent);
                 break;
             case R.id.deleteDatabase:
@@ -100,22 +97,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public Loader<List<Friend>> onCreateLoader(int id, Bundle args) {
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         mContentResolver = this.getContentResolver();
         return new FriendsListLoader(this, FriendsContract.URI_TABLE, mContentResolver);
     }
 
     @Override
-    public void onLoadFinished(Loader<List<Friend>> loader, List<Friend> friends) {
-        mFriends = friends;
-        mFriendAdapter = new FriendAdapter(mFriends, this);
-        mFriendAdapter.loadFriendsData(friends);
+    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+        mCursor = cursor;
+        mFriendAdapter = new FriendAdapter(cursor, this);
+        //mFriendAdapter.loadFriendsData(cursor);
         mFriendList.setAdapter(mFriendAdapter);
-
     }
 
     @Override
-    public void onLoaderReset(Loader<List<Friend>> loader) {
+    public void onLoaderReset(Loader<Cursor> loader) {
         mFriendAdapter.loadFriendsData(null);
     }
 
@@ -128,10 +124,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onClick(View view, View viewAction) {
-        //showToast(String.valueOf(position));
+    public void onClick(View viewDetail, View viewAction) {
 
-        String viewName = String.valueOf(getResources().getResourceEntryName(view.getId()));
+        String viewName = String.valueOf(getResources().getResourceEntryName(viewDetail.getId()));
+        Uri uri = FriendsContract.Friends.buildFriendUri(String.valueOf(viewAction.getTag()));
+
         switch (viewName){
             case "ll_friend_detail":
                 if(lastView != null){
@@ -148,24 +145,25 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case "tv_friend_delete":
-                //showToast(String.valueOf(viewAction.getTag()));
-                ContentResolver contentResolver = mContentResolver;
-                Uri uri = FriendsContract.Friends.buildFriendUri(String.valueOf(viewAction.getTag()));
-                contentResolver.delete(uri, null, null);
+                mContentResolver.delete(uri, null, null);
                 getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
                 break;
 
-            case "tv_friend_view":
-                showToast("VIEW CLICKED");
+            case "tv_friend_view": case "tv_friend_edit":
+                //showToast("VIEW CLICKED");
                 Intent intent = new Intent(MainActivity.this, FriendDetailActivity.class);
-                intent.putExtra("title", "Update Friend");
-                intent.putExtra("friendName", "Update Friend");
+                intent.putExtra(FriendConstants.INTENT_EXTRA_TITLE, ACTIVITY_TITLE_UPDATE);
+                Cursor friend = mContentResolver.query(uri,null,null,null,null);
+                friend.moveToFirst();
+                intent.putExtra(FriendConstants.INTENT_EXTRA_NAME, friend.getString(
+                        friend.getColumnIndex(FriendsContract.FriendsColumns.FRIENDS_NAME)));
+                intent.putExtra(FriendConstants.INTENT_EXTRA_PHONE, friend.getString(
+                        friend.getColumnIndex(FriendsContract.FriendsColumns.FRIENDS_PHONE)));
+                intent.putExtra(FriendConstants.INTENT_EXTRA_EMAIL, friend.getString(
+                        friend.getColumnIndex(FriendsContract.FriendsColumns.FRIENDS_EMAIL)));
+                intent.putExtra(FriendConstants.INTENT_EXTRA_ID, String.valueOf(viewAction.getTag()));
                 startActivity(intent);
         }
-
-
-
-
 
     }
 }
