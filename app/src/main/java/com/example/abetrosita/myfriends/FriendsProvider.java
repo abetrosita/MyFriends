@@ -97,6 +97,9 @@ public class FriendsProvider extends ContentProvider{
         switch (match) {
             case FRIENDS:
                 long recordId = db.insertOrThrow(FriendsDatabase.Tables.FRIENDS, null, values);
+                if(recordId > 0){
+                    getContext().getContentResolver().notifyChange(uri, null);
+                }
                 return FriendsContract.Friends.buildFriendUri(String.valueOf(recordId));
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
@@ -106,9 +109,10 @@ public class FriendsProvider extends ContentProvider{
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         Log.v(TAG, "delete(uri=" + uri);
+        int numRowsDeleted = 0;
         if(uri.equals(FriendsContract.URI_TABLE)){
             deleteDatabase();
-            return 0;
+            return numRowsDeleted;
         }
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
@@ -118,7 +122,11 @@ public class FriendsProvider extends ContentProvider{
                 String id = FriendsContract.Friends.getFriendId(uri);
                 String selectionCriteria = BaseColumns._ID + "=" + id +
                         (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : "");
-                return db.delete(FriendsDatabase.Tables.FRIENDS, selectionCriteria, selectionArgs);
+                numRowsDeleted = db.delete(FriendsDatabase.Tables.FRIENDS, selectionCriteria, selectionArgs);
+                if (numRowsDeleted != 0) {
+                    getContext().getContentResolver().notifyChange(uri, null);
+                }
+                return numRowsDeleted;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
@@ -129,6 +137,8 @@ public class FriendsProvider extends ContentProvider{
         Log.v(TAG, "update(uri=" + uri + " values=" + values.toString());
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
+        
+        int numRowsUpdated = 0;
 
         String selectionCriteria = selection;
         switch (match) {
@@ -143,7 +153,12 @@ public class FriendsProvider extends ContentProvider{
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
 
-        return db.update(FriendsDatabase.Tables.FRIENDS, values, selectionCriteria, selectionArgs);
+        numRowsUpdated = db.update(FriendsDatabase.Tables.FRIENDS, values, selectionCriteria, selectionArgs);
+        if (numRowsDeleted > 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        return numRowsUpdated;
+        
     }
 
 }
