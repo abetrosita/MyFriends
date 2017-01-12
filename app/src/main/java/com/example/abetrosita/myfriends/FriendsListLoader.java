@@ -19,7 +19,6 @@ import java.util.List;
 
 public class FriendsListLoader extends AsyncTaskLoader<Cursor> {
     private static final String LOG_TAG = FriendsListLoader.class.getSimpleName();
-    //private List<Friend> mFriends;
     private ContentResolver mContentResolver;
     private Cursor mCursor;
 
@@ -64,24 +63,7 @@ public class FriendsListLoader extends AsyncTaskLoader<Cursor> {
                 FriendsContract.FriendsColumns.FRIENDS_EMAIL
         };
 
-        List<Friend> entries = new ArrayList<Friend>();
         mCursor = mContentResolver.query(FriendsContract.URI_TABLE, projection, null, null, null);
-        /*
-        if(mCursor !=null){
-            if(mCursor.moveToFirst()){
-                do{
-                    int _id = mCursor.getInt(mCursor.getColumnIndex(BaseColumns._ID));
-                    String name = mCursor.getString(mCursor.getColumnIndex(FriendsContract.Friends.FRIENDS_NAME));
-                    String phone = mCursor.getString(mCursor.getColumnIndex(FriendsContract.Friends.FRIENDS_PHONE));
-                    String email = mCursor.getString(mCursor.getColumnIndex(FriendsContract.Friends.FRIENDS_EMAIL));
-                    Friend friend = new Friend(_id, name, phone, email);
-                    entries.add(friend);
-                }while (mCursor.moveToNext());
-            }
-        }
-
-        return entries;
-        */
         return mCursor;
     }
 
@@ -89,26 +71,29 @@ public class FriendsListLoader extends AsyncTaskLoader<Cursor> {
     public void deliverResult(Cursor cursor) {
 
         if(isReset()){
+            Log.d(LOG_TAG, "+++++ Data came while loader is reset.");
             if(cursor != null){
                 mCursor.close();
+                return;
             }
         }
 
-//        List<Friend> oldFriendList = mFriends;
         Cursor oldCursor = mCursor;
+        mCursor = cursor;
         if(mCursor == null){
-            Log.d(LOG_TAG, "+++++ No data returned");
+            Log.d(LOG_TAG, "+++++ No data returned.");
         }
 
-//        mFriends = friends;
-
         if(isStarted()) {
+            Log.d(LOG_TAG, "+++ Delivering results to the LoaderManager.");
             super.deliverResult(cursor);
         }
 
         if(oldCursor != null && oldCursor != cursor) {
-            mCursor.close();
+            Log.d(LOG_TAG, "+++++ Releasing any old data associated with this Loader.");
+            oldCursor.close();
         }
+        
     }
 
     @Override
@@ -123,6 +108,7 @@ public class FriendsListLoader extends AsyncTaskLoader<Cursor> {
 
     @Override
     protected void onReset() {
+        Log.d(LOG_TAG, "+++++ On reset called.");
         onStopLoading();
         if(mCursor != null){
             mCursor.close();
