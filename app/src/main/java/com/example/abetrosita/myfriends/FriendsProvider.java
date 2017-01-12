@@ -124,7 +124,8 @@ public class FriendsProvider extends ContentProvider{
                         (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : "");
                 numRowsDeleted = db.delete(FriendsDatabase.Tables.FRIENDS, selectionCriteria, selectionArgs);
                 if (numRowsDeleted != 0) {
-                    getContext().getContentResolver().notifyChange(uri, null);
+                    getContext().getContentResolver().notifyChange(FriendsContract.Friends.CONTENT_URI, null);
+                    Log.v(TAG, "++++ DELETED " + String.valueOf(numRowsDeleted));
                 }
                 return numRowsDeleted;
             default:
@@ -154,9 +155,9 @@ public class FriendsProvider extends ContentProvider{
         }
 
         numRowsUpdated = db.update(FriendsDatabase.Tables.FRIENDS, values, selectionCriteria, selectionArgs);
-        if (numRowsDeleted > 0) {
-            getContext().getContentResolver().notifyChange(uri, null);
-        }
+        /*if (numRowsUpdated > 0) {
+            getContext().getContentResolver().notifyChange(FriendsContract.Friends.CONTENT_URI, null);
+        }*/
         return numRowsUpdated;
         
     }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,8 +50,8 @@ class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.FriendViewHolder>
     @Override
     public void onBindViewHolder(FriendViewHolder holder, int position) {
 
-        if (!mCursor.moveToPosition(position) && !mCursor.isClosed())
-            return;
+        if (mCursor.isClosed() || mCursor ==null) return;
+        if(!mCursor.moveToPosition(position)) return;
 
         holder.friendName.setText(mCursor.getString(
                 mCursor.getColumnIndex(FriendsContract.FriendsColumns.FRIENDS_NAME)));
@@ -66,7 +67,7 @@ class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.FriendViewHolder>
 
     @Override
     public int getItemCount() {
-        return mCursor.getCount();
+        return mCursor != null ? mCursor.getCount() : 0;
     }
 
     class FriendViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -109,6 +110,7 @@ class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.FriendViewHolder>
         if (mCursor != null) mCursor.close();
         mCursor = cursor;
         if (cursor != null) {
+            Log.d(LOG_TAG, "++++ NOTIFY DATA SET CHANGED CALLED");
             this.notifyDataSetChanged();
         }
     }

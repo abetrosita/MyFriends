@@ -106,8 +106,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         mCursor = cursor;
-        //mFriendAdapter = new FriendAdapter(cursor, this);
-        //mFriendList.setAdapter(mFriendAdapter);
         mFriendAdapter.loadFriendsData(cursor);
     }
 
@@ -147,8 +145,7 @@ public class MainActivity extends AppCompatActivity
 
             case "tv_friend_delete":
                 mContentResolver.delete(uri, null, null);
-                mFriendAdapter.loadFriendsData(cursor);
-                //getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
+                getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
                 break;
 
             case "tv_friend_view": case "tv_friend_edit":
@@ -157,6 +154,7 @@ public class MainActivity extends AppCompatActivity
                 intent.putExtra(FriendConstants.INTENT_EXTRA_TITLE, ACTIVITY_TITLE_UPDATE);
                 Cursor friend = mContentResolver.query(uri,null,null,null,null);
                 friend.moveToFirst();
+
                 intent.putExtra(FriendConstants.INTENT_EXTRA_NAME, friend.getString(
                         friend.getColumnIndex(FriendsContract.FriendsColumns.FRIENDS_NAME)));
                 intent.putExtra(FriendConstants.INTENT_EXTRA_PHONE, friend.getString(
