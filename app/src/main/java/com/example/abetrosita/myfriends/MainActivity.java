@@ -53,6 +53,9 @@ public class MainActivity extends AppCompatActivity
         mContext = this;
 
         mContentResolver = this.getContentResolver();
+        mFriendAdapter = new FriendAdapter(mCursor, this);
+        mFriendList.setAdapter(mFriendAdapter);
+        
         getSupportLoaderManager().initLoader(LOADER_ID, null, this);
 
 
@@ -76,9 +79,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+        
         int id = item.getItemId();
         switch (item.getItemId()){
             case R.id.addRecord:
@@ -105,9 +106,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         mCursor = cursor;
-        mFriendAdapter = new FriendAdapter(cursor, this);
-        //mFriendAdapter.loadFriendsData(cursor);
-        mFriendList.setAdapter(mFriendAdapter);
+        //mFriendAdapter = new FriendAdapter(cursor, this);
+        //mFriendList.setAdapter(mFriendAdapter);
+        mFriendAdapter.loadFriendsData(cursor);
     }
 
     @Override
@@ -146,7 +147,8 @@ public class MainActivity extends AppCompatActivity
 
             case "tv_friend_delete":
                 mContentResolver.delete(uri, null, null);
-                getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
+                mFriendAdapter.loadFriendsData(cursor);
+                //getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
                 break;
 
             case "tv_friend_view": case "tv_friend_edit":
