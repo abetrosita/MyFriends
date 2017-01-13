@@ -3,12 +3,17 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context="com.example.abetrosita.myfriends.MainActivity">
 
-    <item
+    <!--<item
         android:icon="@android:drawable/ic_menu_search"
         android:id="@+id/searchRecord"
         app:showAsAction="always"
         android:orderInCategory="10"
-        android:title="@string/menu_search"/>
+        android:title="@string/menu_search"/>-->
+    <item android:id="@+id/searchRecord"
+          android:icon="@android:drawable/ic_menu_search"
+          android:title="@string/action_search"
+          app:actionViewClass="android.support.v7.widget.SearchView"
+          app:showAsAction="always|collapseActionView" />
 
     <item
         android:icon="@android:drawable/ic_menu_add"

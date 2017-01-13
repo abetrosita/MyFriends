@@ -10,8 +10,6 @@ import android.util.Log;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by AbetRosita on 12/29/2016.
@@ -21,10 +19,18 @@ public class FriendsListLoader extends AsyncTaskLoader<Cursor> {
     private static final String LOG_TAG = FriendsListLoader.class.getSimpleName();
     private ContentResolver mContentResolver;
     private Cursor mCursor;
+    private String mFilterText;
+
+    public FriendsListLoader(Context context, Uri uri, ContentResolver contentResolver, String filterText){
+        super(context);
+        mContentResolver = contentResolver;
+        mFilterText = filterText;
+    }
 
     public FriendsListLoader(Context context, Uri uri, ContentResolver contentResolver){
         super(context);
         mContentResolver = contentResolver;
+        mFilterText = "";
     }
 
     public FriendsListLoader(Context context) {
@@ -63,7 +69,8 @@ public class FriendsListLoader extends AsyncTaskLoader<Cursor> {
                 FriendsContract.FriendsColumns.FRIENDS_EMAIL
         };
 
-        mCursor = mContentResolver.query(FriendsContract.URI_TABLE, projection, null, null, null);
+        String selection = FriendsContract.FriendsColumns.FRIENDS_NAME + " LIKE '" + mFilterText + "%'";
+        mCursor = mContentResolver.query(FriendsContract.URI_TABLE, projection, selection, null, null);
         return mCursor;
     }
 

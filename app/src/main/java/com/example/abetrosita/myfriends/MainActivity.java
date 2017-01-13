@@ -2,6 +2,7 @@ package com.example.abetrosita.myfriends;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -10,9 +11,12 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,10 +27,13 @@ import static android.view.View.GONE;
 import static com.example.abetrosita.myfriends.FriendConstants.ACTIVITY_TITLE_UPDATE;
 
 public class MainActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<Cursor>, FriendAdapter.FriendAdapterOnClickHandler{
+        implements LoaderManager.LoaderCallbacks<Cursor>,
+        FriendAdapter.FriendAdapterOnClickHandler,
+        SearchView.OnQueryTextListener{
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
-    private static final int LOADER_ID = 1;
+    public static final int LOADER_ID = 1;
+    public static LoaderManager.LoaderCallbacks mCallback;
 
     private Toast mToast;
     public static FriendAdapter mFriendAdapter;
@@ -34,6 +41,7 @@ public class MainActivity extends AppCompatActivity
     public static Context mContext;
     private RecyclerView mFriendList;
     private Cursor mCursor;
+    private String mFilterText;
 
     private View lastView;
     private boolean editVisible;
@@ -50,7 +58,9 @@ public class MainActivity extends AppCompatActivity
         mFriendList = (RecyclerView) findViewById(R.id.rv_friends);
         mFriendList.setLayoutManager(layoutManager);
         mFriendList.setHasFixedSize(false);
+        mCallback = this;
         mContext = this;
+        mFilterText = "";
 
         mContentResolver = this.getContentResolver();
         mFriendAdapter = new FriendAdapter(mCursor, this);
@@ -71,9 +81,40 @@ public class MainActivity extends AppCompatActivity
 
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        final MenuItem item = menu.findItem(R.id.searchRecord);
+        final MenuItem addFriend = menu.findItem(R.id.addRecord);
+        final MenuItem deleteDb = menu.findItem(R.id.deleteDatabase);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(item);
+        searchView.setOnQueryTextListener(this);
+
+        MenuItemCompat.setOnActionExpandListener(item,
+                new MenuItemCompat.OnActionExpandListener() {
+                    @Override
+                    public boolean onMenuItemActionCollapse(MenuItem item) {
+                        setItemsVisibility(item, true);
+                        mFilterText = "";
+                        getSupportLoaderManager().restartLoader(LOADER_ID, null, MainActivity.this);
+                        return true; // Return true to collapse action view
+                    }
+
+                    @Override
+                    public boolean onMenuItemActionExpand(MenuItem item) {
+                        setItemsVisibility(item, false);
+                        return true; // Return true to expand action view
+                    }
+
+                    private void setItemsVisibility(MenuItem exception, boolean visible) {
+                        for (int i=0; i<menu.size(); ++i) {
+                            MenuItem item = menu.getItem(i);
+                            if (item != exception) item.setVisible(visible);
+                        }
+                    }
+                });
+
         return true;
     }
 
@@ -88,10 +129,10 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
                 break;
             case R.id.deleteDatabase:
-
+                showDeleteDatabaseDialog();
                 break;
-            case R.id.searchRecord:
-
+            case R.id.action_settings:
+                showToast("Settings Clicked");
         }
 
         return super.onOptionsItemSelected(item);
@@ -100,7 +141,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         mContentResolver = this.getContentResolver();
-        return new FriendsListLoader(this, FriendsContract.URI_TABLE, mContentResolver);
+        return new FriendsListLoader(this, FriendsContract.URI_TABLE, mContentResolver, mFilterText);
     }
 
     @Override
@@ -166,4 +207,47 @@ public class MainActivity extends AppCompatActivity
         }
 
     }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        //showToast(newText);
+        mFilterText = newText;
+        getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
+        return true;
+    }
+
+    private void showDeleteDatabaseDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle(R.string.dialog_title_delete_database);
+        builder.setMessage(R.string.dialog_message_delete_database);
+
+        String positiveText = getString(android.R.string.ok);
+        builder.setPositiveButton(positiveText,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Uri uri = FriendsContract.URI_TABLE;
+                        mContentResolver.delete(uri, null, null);
+                        getSupportLoaderManager().restartLoader(LOADER_ID, null, MainActivity.this);
+                    }
+                });
+
+        String negativeText = getString(android.R.string.cancel);
+        builder.setNegativeButton(negativeText,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // negative button logic
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
 }

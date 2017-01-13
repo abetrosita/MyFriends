@@ -5,4 +5,7 @@
     <string name="menu_add">Add</string>
     <string name="menu_delete_database">Delete Database</string>
     <string name="activity_addFriend_label">Add Friend</string>
+    <string name="action_search">Search</string>
+    <string name="dialog_title_delete_database">Delete Database</string>
+    <string name="dialog_message_delete_database">Are you sure you want to delete Friends database?</string>
 </resources>
