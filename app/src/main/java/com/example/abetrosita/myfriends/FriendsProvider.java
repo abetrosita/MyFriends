@@ -124,7 +124,7 @@ public class FriendsProvider extends ContentProvider{
                         (!TextUtils.isEmpty(selection) ? " AND (" + selection + ")" : "");
                 numRowsDeleted = db.delete(FriendsDatabase.Tables.FRIENDS, selectionCriteria, selectionArgs);
                 if (numRowsDeleted != 0) {
-                    getContext().getContentResolver().notifyChange(FriendsContract.Friends.CONTENT_URI, null);
+                    getContext().getContentResolver().notifyChange(FriendsContract.URI_TABLE, null);
                     Log.v(TAG, "++++ DELETED " + String.valueOf(numRowsDeleted));
                 }
                 return numRowsDeleted;

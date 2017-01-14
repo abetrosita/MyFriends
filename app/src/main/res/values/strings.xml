@@ -6,6 +6,11 @@
     <string name="menu_delete_database">Delete Database</string>
     <string name="activity_addFriend_label">Add Friend</string>
     <string name="action_search">Search</string>
+
     <string name="dialog_title_delete_database">Delete Database</string>
     <string name="dialog_message_delete_database">Are you sure you want to delete Friends database?</string>
+    <string name="dialog_title_delete_db">Delete Database</string>
+    <string name="dialog_message_delete_db">Do you want to delete database?</string>
+    <string name="dialog_positive_action">OK</string>
+    <string name="dialog_negative_action">CANCEL</string>
 </resources>

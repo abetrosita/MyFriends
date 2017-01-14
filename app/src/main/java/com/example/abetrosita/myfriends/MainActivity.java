@@ -42,9 +42,12 @@ public class MainActivity extends AppCompatActivity
     private RecyclerView mFriendList;
     private Cursor mCursor;
     private String mFilterText;
+    private static Uri mUri;
 
     private View lastView;
     private boolean editVisible;
+
+    public static LoaderManager mLoaderManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +57,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+
 
         mFriendList = (RecyclerView) findViewById(R.id.rv_friends);
         mFriendList.setLayoutManager(layoutManager);
@@ -65,8 +69,9 @@ public class MainActivity extends AppCompatActivity
         mContentResolver = this.getContentResolver();
         mFriendAdapter = new FriendAdapter(mCursor, this);
         mFriendList.setAdapter(mFriendAdapter);
-        
-        getSupportLoaderManager().initLoader(LOADER_ID, null, this);
+
+        mLoaderManager = getSupportLoaderManager();
+        mLoaderManager.initLoader(LOADER_ID, null, this);
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -97,7 +102,7 @@ public class MainActivity extends AppCompatActivity
                     public boolean onMenuItemActionCollapse(MenuItem item) {
                         setItemsVisibility(item, true);
                         mFilterText = "";
-                        getSupportLoaderManager().restartLoader(LOADER_ID, null, MainActivity.this);
+                        mLoaderManager.restartLoader(LOADER_ID, null, MainActivity.this);
                         return true; // Return true to collapse action view
                     }
 
@@ -129,7 +134,8 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
                 break;
             case R.id.deleteDatabase:
-                showDeleteDatabaseDialog();
+                FriendsDialog dialog = new FriendsDialog(this, FriendConstants.DIALOG_DELETE_DATABASE);
+                dialog.showDialog();
                 break;
             case R.id.action_settings:
                 showToast("Settings Clicked");
@@ -185,8 +191,11 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case "tv_friend_delete":
-                mContentResolver.delete(uri, null, null);
-                getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
+//                mContentResolver.delete(uri, null, null);
+//                getSupportLoaderManager().restartLoader(LOADER_ID, null, this);
+                mUri = uri;
+                FriendsDialog dialog = new FriendsDialog(this, FriendConstants.DIALOG_DELETE_FRIEND);
+                dialog.showDialog();
                 break;
 
             case "tv_friend_view": case "tv_friend_edit":
@@ -233,7 +242,7 @@ public class MainActivity extends AppCompatActivity
                     public void onClick(DialogInterface dialog, int which) {
                         Uri uri = FriendsContract.URI_TABLE;
                         mContentResolver.delete(uri, null, null);
-                        getSupportLoaderManager().restartLoader(LOADER_ID, null, MainActivity.this);
+                        mLoaderManager.restartLoader(LOADER_ID, null, MainActivity.this);
                     }
                 });
 
@@ -249,5 +258,17 @@ public class MainActivity extends AppCompatActivity
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
+    public static void deleteDatabase(){
+        Uri uri = FriendsContract.URI_TABLE;
+        mContentResolver.delete(uri, null, null);
+        mLoaderManager.restartLoader(LOADER_ID, null, mCallback);
+    }
+
+    public static void deleteFriend(){
+        mContentResolver.delete(mUri, null, null);
+        mLoaderManager.restartLoader(LOADER_ID, null, mCallback);
+    }
+
 
 }
